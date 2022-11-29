@@ -2,7 +2,6 @@ set(TARGET_NAME w5x00_tcp_client_over_ssl)
 
 add_executable(${TARGET_NAME}
         ${TARGET_NAME}.c
-        NetworkServices.c
         )
 
 target_link_libraries(${TARGET_NAME} PRIVATE
@@ -12,8 +11,6 @@ target_link_libraries(${TARGET_NAME} PRIVATE
         FREERTOS_FILES
         ETHERNET_FILES
         IOLIBRARY_FILES
-        DHCP_FILES
-        DNS_FILES
         TIMER_FILES        
         mbedcrypto
         mbedx509
