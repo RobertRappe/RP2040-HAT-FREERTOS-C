@@ -12,7 +12,7 @@ include(pico_sdk_import.cmake)
 include(rp2040_hat_freertos_c_sdk_version.cmake)
 
 # Set project name
-set(PROJECT_NAME RP2040-HAT-FREERTOS-C)
+set(PROJECT_NAME Rainbow_pico)
 
 # Set project informations
 project(${PROJECT_NAME} C CXX ASM)
@@ -67,6 +67,8 @@ add_definitions(-DSET_TRUSTED_CERT_IN_SAMPLES)
 
 # Hardware-specific examples in subdirectories:
 add_subdirectory(examples)
+
+add_subdirectory(code)
 
 # Add libraries in subdirectories
 add_subdirectory(${CMAKE_SOURCE_DIR}/libraries)
