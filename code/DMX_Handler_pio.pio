@@ -1,0 +1,22 @@
+.program DMX_RX
+.define dmx_bit 4
+
+BRK_RST: ;reset and wait for line to drop
+    set x, 29
+    wait 0 pin 0
+BRK_LOOP: ;count while lo reset if Hi before count complets
+    jmp pin BRK_RST       
+    jmp x-- BRK_LOOP      [1]
+    wait 1 pin 0 ; count cleared wait for break to finish
+    irq set 0 ;flag interupt to let system know new data is coming
+BYTE_LOOP: ;cycle for byte intake loop
+    wait 0 pin 0
+    set x, 7              [dmx_bit]
+BIT_LOOP: ;read 8 bits
+    in pins, 1
+    jmp x-- BIT_LOOP      [dmx_bit-2]
+    wait 1 pin 0 ;wait for stop bit Hi
+    in NULL, 24
+    push
+
+    jmp BYTE_LOOP

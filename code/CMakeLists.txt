@@ -4,10 +4,15 @@ add_executable(${TARGET_NAME}
         ${TARGET_NAME}.c
         NetworkServices.h
         NetworkServices.c
+        SystemManager.h
+        SystemManager.c
+        GPIO_isrMplex.h
+        GPIO_isrMplex.c
         )
 
 target_link_libraries(${TARGET_NAME} PRIVATE
         pico_stdlib
+        pico_stdio_usb 
         hardware_spi
         hardware_dma
         FREERTOS_FILES
@@ -15,7 +20,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE
         IOLIBRARY_FILES
         DHCP_FILES
         DNS_FILES
-        TIMER_FILES        
+        TIMER_FILES
         #mbedcrypto
         #mbedx509
         #mbedtls

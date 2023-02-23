@@ -22,6 +22,8 @@
 
 #include "timer.h"
 #include "NetworkServices.h"
+#include "SystemManager.h"
+#include "GPIO_isrMplex.h"
 
 //#include "mbedtls/x509_crt.h"
 //#include "mbedtls/error.h"
@@ -49,6 +51,8 @@ void test_task(void *argument)
 
     uint8_t remoteAddr[] = {0,0,0,0};
     uint16_t remotePort = 55601;
+    char outString[256];
+    char outBuff[128];
 
     while(netSocket == NULL)
     { 
@@ -76,7 +80,29 @@ void test_task(void *argument)
             remoteAddr[2] = netSocket->sourceAddr[2];
             remoteAddr[3] = netSocket->sourceAddr[3];
             netSocket->RXdataReady = WAITING;
-            errorStatus error = NetworkService_TrySendUDP(netSocket, remoteAddr, remotePort, testDataBlock2, netSocket->RXbuffUsed);
+
+		if(netSocket->RXbuffUsed>0)
+		{
+			char *  pointer = strstr((char*)testDataBlock1,"test");
+			if(pointer != NULL){
+				//printf("Tested!\n");
+                NetworkService_TrySendUDP(netSocket, remoteAddr, remotePort, "Tested!\n", 8);
+			}
+            pointer = strstr((char*)testDataBlock1,"getStatus");
+			if(pointer != NULL)
+			{
+
+                sprintf(outBuff,"RX: addr:%d.%d.%d.%d, port:%d, message: %s\n", remoteAddr[0],
+                    remoteAddr[1], remoteAddr[2], remoteAddr[3], remotePort, testDataBlock1);
+                NetworkService_TrySendUDP(netSocket, remoteAddr, remotePort, outBuff, strlen(outBuff));
+			}
+            pointer = strstr((char*)testDataBlock1,"Boing?");
+			if(pointer != NULL)
+			{
+                NetworkService_TrySendUDP(netSocket, remoteAddr, remotePort, "Ping!\n", 6);
+			}
+		 }
+            //errorStatus error = NetworkService_TrySendUDP(netSocket, remoteAddr, remotePort, testDataBlock2, netSocket->RXbuffUsed);
         }
 
         
@@ -121,7 +147,7 @@ int main() {
     set_clock_khz();
 
     stdio_init_all();
-
+	sleep_ms(100);
     //mbedtls_platform_set_calloc_free(pvPortCalloc, pvPortFree);
     
     wizchip_spi_initialize();
@@ -140,8 +166,10 @@ int main() {
     xTaskCreate(NetworkService_task, "NetworkService_task", NETSERV_TASK_STACK_SIZE, NULL, NETSERV_TASK_PRIORITY, NULL);
     xTaskCreate(test_task, "test_task", NETSERV_TASK_STACK_SIZE, NULL, 8, NULL);
     NetworkService_SetIntMask(0b00000001);
-    
-    gpio_set_irq_enabled_with_callback(21,GPIO_IRQ_EDGE_FALL,true,gpio_callback);
+    void GPIO_isrMplex_init();
+
+    GPIO_isrMplex_AddGPIOwatch(21,GPIO_IRQ_EDGE_FALL,&gpio_callback);
+    //gpio_set_irq_enabled_with_callback(21,GPIO_IRQ_EDGE_FALL,true,gpio_callback);
     //dns_sem = xSemaphoreCreateCounting((unsigned portBASE_TYPE)0x7fffffff, (unsigned portBASE_TYPE)0);
 
     vTaskStartScheduler();
