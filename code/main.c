@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "hardware/gpio.h"
 
 #include <FreeRTOS.h>
@@ -25,6 +26,8 @@
 #include "SystemManager.h"
 #include "GPIO_isrMplex.h"
 
+#include "bsp/board.h"
+#include "tusb.h"
 //#include "mbedtls/x509_crt.h"
 //#include "mbedtls/error.h"
 //#include "mbedtls/ssl.h"
@@ -143,10 +146,12 @@ static void gpio_callback(uint gpio, uint32_t events)
 }
 
 int main() {
+    
     /* Initialize */
     set_clock_khz();
 
-    stdio_init_all();
+    //stdio_init_all();
+    //tusb_init();
 	sleep_ms(100);
     //mbedtls_platform_set_calloc_free(pvPortCalloc, pvPortFree);
     
@@ -164,11 +169,16 @@ int main() {
     xTaskCreate(dhcp_task, "DHCP_Task", DHCP_TASK_STACK_SIZE, NULL, DHCP_TASK_PRIORITY, NULL);
     //xTaskCreate(dns_task, "DNS_Task", DNS_TASK_STACK_SIZE, NULL, DNS_TASK_PRIORITY, NULL);
     xTaskCreate(NetworkService_task, "NetworkService_task", NETSERV_TASK_STACK_SIZE, NULL, NETSERV_TASK_PRIORITY, NULL);
-    xTaskCreate(test_task, "test_task", NETSERV_TASK_STACK_SIZE, NULL, 8, NULL);
+    //xTaskCreate(test_task, "test_task", NETSERV_TASK_STACK_SIZE, NULL, 8, NULL);
+    xTaskCreate(usb_device_task, "usb_device_task", configMINIMAL_STACK_SIZE/2, NULL, 4, NULL);
+    xTaskCreate(USBwatcher_task, "USBwatcher_task", 3*configMINIMAL_STACK_SIZE*2, NULL, 5, NULL);
+    xTaskCreate(NetworkUDPwatcher_task, "NetworkUDPwatcher_task", 3*configMINIMAL_STACK_SIZE, NULL, 4, NULL);
+    xTaskCreate(GPIO_hndlr_task, "GPIO_hndlr_task", 2*configMINIMAL_STACK_SIZE, NULL, 5, NULL);
     NetworkService_SetIntMask(0b00000001);
-    void GPIO_isrMplex_init();
+    GPIO_isrMplex_init();
 
     GPIO_isrMplex_AddGPIOwatch(21,GPIO_IRQ_EDGE_FALL,&gpio_callback);
+    SM_init();
     //gpio_set_irq_enabled_with_callback(21,GPIO_IRQ_EDGE_FALL,true,gpio_callback);
     //dns_sem = xSemaphoreCreateCounting((unsigned portBASE_TYPE)0x7fffffff, (unsigned portBASE_TYPE)0);
 

@@ -109,6 +109,8 @@ typedef struct
 static xSemaphoreHandle NetworkDataReady;
 static socketConfig socketSet[8];
 
+/* format functions*/
+int setIPnum(uint8_t*,uint8_t,uint8_t,uint8_t,uint8_t);
 
 /* functions */
 
@@ -123,6 +125,7 @@ errorStatus NetworkService_TrySendTCP(socketConfig *netSocket, uint8_t * newTXms
 errorStatus NetworkService_TrySendUDP(socketConfig *netSocket, uint8_t *destAddr, uint16_t destPort, uint8_t * newTXmsg,uint16_t newTXmsgLen);
 void NetworkService_SetIntMask(uint8_t);
 uint8_t NetworkService_GetIntMask(void);
+void NetworkService_RXhandled(socketConfig *netSocket);
 
 
 

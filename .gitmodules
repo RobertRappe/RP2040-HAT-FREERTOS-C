@@ -13,3 +13,6 @@
 [submodule "libraries/pico-extras"]
 	path = libraries/pico-extras
 	url = https://github.com/raspberrypi/pico-extras.git
+[submodule "no-OS-FatFS-SD-SPI-RPi-Pico"]
+	path = no-OS-FatFS-SD-SPI-RPi-Pico
+	url = https://github.com/carlk3/no-OS-FatFS-SD-SPI-RPi-Pico.git

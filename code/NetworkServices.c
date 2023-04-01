@@ -529,4 +529,22 @@ errorStatus NetworkService_TrySendUDP(socketConfig *netSocket, uint8_t *destinAd
     xSemaphoreGive(NetworkDataReady);
 }
 
+//call after handling recived data
+void NetworkService_RXhandled(socketConfig *netSocket)
+{
+    
+    netSocket->RXdataReady = WAITING;
+    xSemaphoreGive(NetworkDataReady);
+}
+
+/*formating tool functions*/
+
+int setIPnum(uint8_t*addr,uint8_t block0,uint8_t block1,uint8_t block2,uint8_t block3)
+{
+    addr[0] = block0;
+    addr[1] = block1;
+    addr[2] = block2;
+    addr[3] = block3;
+    return 0;
+}
 #endif

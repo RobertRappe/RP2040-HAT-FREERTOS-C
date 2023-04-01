@@ -1,0 +1,44 @@
+.program DACloader
+
+.side_set 1
+
+.wrap_target
+public entry_point: 
+;first FIFO load up
+    pull            side 0x0
+    set y, 1        side 0x0;1 = 2 loops
+NEWWORD:
+    set x, 15       side 0x0
+    wait 0 pin 0     side 0x1  ;wait for start
+BITLOOP:
+    out pins, 1     side 0x1
+    jmp x-- BITLOOP side 0x0
+    set pins, 0     side 0x0
+    wait 1 pin 0     side 0x0
+    jmp y-- NEWWORD side 0x0
+.wrap  
+
+% c-sdk {
+#include "hardware/clocks.h"
+#include "hardware/gpio.h"
+
+   static inline void DACloader_program_init(PIO pio, uint sm, uint offset, uint SYNCpin, uint CLKpin, uint TXpin) {
+    pio_sm_config c = DACloader_program_get_default_config(offset);
+    sm_config_set_in_pins(&c, SYNCpin); // for WAIT, IN
+    //sm_config_set_jmp_pin(&c, SYNCpin); // for JMP
+    sm_config_set_sideset_pins(&c, CLKpin);
+    sm_config_set_out_pins(&c, TXpin, 1);
+    sm_config_set_out_shift(&c, false, true, 32);
+    pio_sm_set_pins_with_mask(pio, sm, 0, (1u << CLKpin) | (1u << TXpin));
+    pio_sm_set_pindirs_with_mask(pio, sm, (1u << CLKpin) | (1u << TXpin), (1u << CLKpin) | (1u << TXpin) | (1u << SYNCpin));
+    pio_gpio_init(pio, SYNCpin);
+	pio_gpio_init(pio, CLKpin);
+	pio_gpio_init(pio, TXpin);
+    int div = clock_get_hz(clk_sys) / (60000000);//50Mhz000
+    //int div = clock_get_hz(clk_sys) / (8*baud);
+    //int div = clock_get_hz(clk_sys) / (11*baud);;//(float)clock_get_hz(clk_sys) / (1000000);//11 *
+    sm_config_set_clkdiv(&c, div);
+    pio_sm_init(pio, sm, offset, &c);
+
+   }
+%}
